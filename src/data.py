@@ -1,34 +1,85 @@
-import torch
+import os
+import shutil
+import random
 from torchvision import datasets, transforms
-from torch.utils.data import DataLoader, random_split
-from .config import IMAGE_SIZE, BATCH_SIZE, DATA_DIR
+from torch.utils.data import DataLoader
+from .config import Config
 
-def prepare_data_loaders():
-    """
-    Loads images from the local system and splits them into training and testing sets.
-    """
-    
-    # Standard image transforms
-    data_transforms = transforms.Compose([
-        transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
+
+def prepare_dataset():
+    if os.path.exists(Config.DATA_DIR):
+        print("Dataset already prepared.")
+        return
+
+    print("Preparing dataset...")
+
+    random.seed(Config.SEED)
+
+    classes = os.listdir(Config.ORIGINAL_DATA_DIR)
+
+    for split in ["train", "test"]:
+        for cls in classes:
+            os.makedirs(
+                os.path.join(Config.DATA_DIR, split, cls),
+                exist_ok=True
+            )
+
+    for cls in classes:
+        class_path = os.path.join(Config.ORIGINAL_DATA_DIR, cls)
+
+        images = os.listdir(class_path)
+        random.shuffle(images)
+
+        split_idx = int(len(images) * Config.TRAIN_SPLIT)
+
+        train_images = images[:split_idx]
+        test_images = images[split_idx:]
+
+        for img in train_images:
+            shutil.copy2(
+                os.path.join(class_path, img),
+                os.path.join(Config.DATA_DIR, "train", cls, img)
+            )
+
+        for img in test_images:
+            shutil.copy2(
+                os.path.join(class_path, img),
+                os.path.join(Config.DATA_DIR, "test", cls, img)
+            )
+
+    print("Dataset prepared successfully.")
+
+
+def get_dataloaders():
+    prepare_dataset()
+
+    transform = transforms.Compose([
+        transforms.Resize((Config.IMAGE_SIZE, Config.IMAGE_SIZE)),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.Normalize((0.5, 0.5, 0.5),
+                             (0.5, 0.5, 0.5))
     ])
 
-    try:
-        # Loading from local system using ImageFolder
-        # Assumes directory structure: root/class_x/xxx.ext
-        full_dataset = datasets.ImageFolder(root=DATA_DIR, transform=data_transforms)
-    except Exception as e:
-        print(f"Error: Could not find dataset at {DATA_DIR}. {e}")
-        return None, None, []
+    train_dataset = datasets.ImageFolder(
+        root=os.path.join(Config.DATA_DIR, "train"),
+        transform=transform
+    )
 
-    # Split into train data and test data (80% train, 20% test)
-    train_size = int(0.8 * len(full_dataset))
-    test_size = len(full_dataset) - train_size
-    train_dataset, test_dataset = random_split(full_dataset, [train_size, test_size])
+    test_dataset = datasets.ImageFolder(
+        root=os.path.join(Config.DATA_DIR, "test"),
+        transform=transform
+    )
 
-    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
-    
-    return train_loader, test_loader, full_dataset.classes
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=Config.BATCH_SIZE,
+        shuffle=True
+    )
+
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=Config.BATCH_SIZE,
+        shuffle=False
+    )
+
+    return train_loader, test_loader

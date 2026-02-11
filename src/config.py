@@ -1,16 +1,18 @@
-import os
+import torch
 
-# DATASET CONFIGURATION
-IMAGE_SIZE = 128
-BATCH_SIZE = 32
-DATA_DIR = r"C:\Users\User\Downloads\DataSet-20260211T064335Z-3-001"
-OUTPUT_DIR = os.path.join(os.getcwd(), "outputs")
 
-# TRAINING HYPERPARAMETERS
-LEARNING_RATE = 0.001
-EPOCHS = 10
-NUM_CLASSES = 2  # Binary classification: Bird or Not Bird
+class Config:
+    ORIGINAL_DATA_DIR = "original_dataset"
+    DATA_DIR = "dataset"
 
-# MLFLOW CONFIGURATION
-EXPERIMENT_NAME = "Bird_Binary_Classification"
-RUN_NAME = "Initial_CNN_Run"
+    TRAIN_SPLIT = 0.8
+    SEED = 42
+
+    IMAGE_SIZE = 128
+    BATCH_SIZE = 32
+    EPOCHS = 10
+    LEARNING_RATE = 1e-3
+
+    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+    EXPERIMENT_NAME = "Bird_vs_NoBird_Baseline"
