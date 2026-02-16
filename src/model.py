@@ -10,7 +10,7 @@ class BasicCNN(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(2),
 
-            nn.Conv2d(16, 32, 3, padding=1),
+            nn.Conv2d(16, 32, 3, padding=1), 
             nn.ReLU(),
             nn.MaxPool2d(2),
 
