@@ -3,7 +3,10 @@ import shutil
 import random
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-from .config import Config
+# from .config import Config
+
+from src.config import Config
+
 
 
 def prepare_dataset():
