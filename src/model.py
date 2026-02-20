@@ -1,6 +1,5 @@
 import torch.nn as nn
 
-
 class BasicCNN(nn.Module):
     def __init__(self):
         super(BasicCNN, self).__init__()
@@ -10,7 +9,7 @@ class BasicCNN(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(2),
 
-            nn.Conv2d(16, 32, 3, padding=1), 
+            nn.Conv2d(16, 32, 3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2),
 
@@ -21,7 +20,7 @@ class BasicCNN(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(64 * 16 * 16, 128),
+            nn.Linear(64 * 16 * 16, 128),  # 128x128 input -> 16x16 after 3 pools
             nn.ReLU(),
             nn.Linear(128, 1)
         )

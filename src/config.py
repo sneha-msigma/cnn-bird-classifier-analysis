@@ -2,7 +2,7 @@ import torch
 
 
 class Config:
-    ORIGINAL_DATA_DIR = "original_dataset"
+    ORIGINAL_DATA_DIR = r"C:\Users\User\Desktop\Antigravity projects\Bird_dataset"
     DATA_DIR = "dataset"
 
     TRAIN_SPLIT = 0.8

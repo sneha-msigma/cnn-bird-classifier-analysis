@@ -11,7 +11,7 @@ from .config import Config
 
 
 
-def predict_image(image_path):
+def predict_image(image_path):    
 
     # Load model
     model = BasicCNN().to(Config.DEVICE)

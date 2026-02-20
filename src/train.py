@@ -1,9 +1,11 @@
 import torch
+import torch.nn as nn
+import torch.optim as optim
 import mlflow
 import mlflow.pytorch
 import random
 import numpy as np
-from torch import nn, optim
+
 
 from .config import Config
 from .data import get_dataloaders
@@ -24,9 +26,9 @@ def train_model():
     train_loader, test_loader = get_dataloaders()
 
     model = BasicCNN().to(Config.DEVICE)
+
     criterion = nn.BCEWithLogitsLoss()
-    optimizer = optim.Adam(model.parameters(),
-                           lr=Config.LEARNING_RATE)
+    optimizer = optim.Adam(model.parameters(), lr=Config.LEARNING_RATE)
 
     mlflow.set_experiment(Config.EXPERIMENT_NAME)
 
@@ -36,7 +38,7 @@ def train_model():
             "epochs": Config.EPOCHS,
             "batch_size": Config.BATCH_SIZE,
             "learning_rate": Config.LEARNING_RATE,
-            "image_size": Config.IMAGE_SIZE
+            "image_size": Config.IMAGE_SIZE,
         })
 
         for epoch in range(Config.EPOCHS):
@@ -45,6 +47,7 @@ def train_model():
             running_loss = 0.0
 
             for images, labels in train_loader:
+
                 images = images.to(Config.DEVICE)
                 labels = labels.float().unsqueeze(1).to(Config.DEVICE)
 
@@ -58,11 +61,19 @@ def train_model():
                 running_loss += loss.item()
 
             avg_loss = running_loss / len(train_loader)
+
             mlflow.log_metric("train_loss", avg_loss, step=epoch)
 
-            print(f"Epoch [{epoch+1}/{Config.EPOCHS}] "
-                  f"Loss: {avg_loss:.4f}")
+            print(f"Epoch [{epoch+1}/{Config.EPOCHS}] - Loss: {avg_loss:.4f}")
+
+        # Save model weights
+        torch.save(model.state_dict(), "model.pth")
+        print("Model saved as model.pth")
 
         mlflow.pytorch.log_model(model, "model")
 
     print("Training completed.")
+
+
+if __name__ == "__main__":
+    train_model()
